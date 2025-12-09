@@ -1,0 +1,12 @@
+# AWS Lambda Container Image for Serverless Pong
+FROM public.ecr.aws/lambda/nodejs:18
+
+# Copy source code to function root
+COPY src ${LAMBDA_TASK_ROOT}/src
+
+# Copy package files and install dependencies
+COPY package*.json ${LAMBDA_TASK_ROOT}/
+RUN npm install --production
+
+# Set the Lambda handler
+CMD ["src/lambda.handler"]

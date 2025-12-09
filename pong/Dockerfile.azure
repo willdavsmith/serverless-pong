@@ -1,0 +1,20 @@
+# Azure Functions Container Image for Serverless Pong
+FROM mcr.microsoft.com/azure-functions/node:4.0
+
+# Set working directory
+WORKDIR /home/site/wwwroot
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install --production
+
+# Copy source code
+COPY src ./src
+COPY host.json ./
+
+# Azure Functions environment variables
+ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
+    AzureFunctionsJobHost__Logging__Console__IsEnabled=true \
+    FUNCTIONS_WORKER_RUNTIME=node

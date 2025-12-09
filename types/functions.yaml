@@ -1,0 +1,53 @@
+namespace: Radius.Compute
+types:
+  functions:
+    description: |
+      The `Radius.Compute/functions` resource type deploys a serverless function instance. Use it in your application Bicep to bind a function to an application/environment and set the image and auth behavior.
+
+      Example:
+      ```
+      extension radius
+      param environment string
+
+      resource myApp 'Applications.Core/Applications@2023-10-01-preview' = { ... }
+
+      resource fn 'Radius.Compute/functions@2025-08-01-preview' = {
+        name: 'hello-func'
+        properties: {
+          application: myApp.id
+          environment: environment
+          image: 'ghcr.io/your-org/hello-func:latest'
+        }
+      }
+      ```
+
+      After deployment, the function emits a `url` property you can expose via connections or outputs.
+    apiVersions:
+      '2025-12-08-preview':
+        schema:
+          type: object
+          properties:
+            environment:
+              type: string
+              description: (Required) The Radius Environment ID. Typically set by the rad CLI (e.g., `environment`).
+            application:
+              type: string
+              description: (Required) The Radius Application ID. For example, `myApp.id`.
+            image:
+              type: string
+              description: (Required) Container image URI for the function (public or authenticated as supported by your runtime).
+            connections:
+              type: object
+              description: (Required) A connection to another resource. Environment variables will be created for each property on the connected resource.
+              additionalProperties:
+                type: object
+                properties:
+                  source:
+                    type: string
+                    description: (Required) The resource ID of the Secret resource.
+                required: [source]
+            url:
+              type: string
+              readOnly: true
+              description: "(Read-only) The URL of the function."
+          required: [environment, application, image]

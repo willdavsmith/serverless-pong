@@ -1,0 +1,56 @@
+extension radius
+extension radiusResources
+
+param environment string
+
+
+resource pongApp 'Applications.Core/applications@2023-10-01-preview' = {
+  name: 'pong'
+  properties: {
+    environment: environment
+  }
+}
+
+// resource pong 'Applications.Core/containers@2023-10-01-preview' = {
+//   name: 'pong'
+//   properties: {
+//     application: pongApp.id
+//     environment: environment
+//     container: {
+//       image: 'pong-local:latest'
+//       imagePullPolicy: 'IfNotPresent'
+//       ports: {
+//         web: {
+//           containerPort: 3000
+//         }
+//       }
+//     }
+    // connections: {
+    //   redis: {
+    //     source: redis.id
+    //   }
+//     }
+//   }
+// }
+
+resource pong 'Radius.Compute/functions@2025-12-08-preview' = {
+  name: 'pong'
+  properties: {
+    application: pongApp.id
+    environment: environment
+    image: 'pong:latest'
+    connections: {
+      redis: {
+        source: redis.id
+      }
+    }
+  }
+}
+
+resource redis 'Applications.Datastores/redisCaches@2023-10-01-preview' = {
+  name: 'redis'
+  properties: {
+    application: pongApp.id
+    environment: environment
+  }
+}
