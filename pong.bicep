@@ -33,19 +33,19 @@ resource pongApp 'Applications.Core/applications@2023-10-01-preview' = {
 //   }
 // }
 
-resource pong 'Radius.Compute/functions@2025-12-08-preview' = {
-  name: 'pong'
-  properties: {
-    application: pongApp.id
-    environment: environment
-    image: 'pong:latest'
-    connections: {
-      redis: {
-        source: redis.id
-      }
-    }
-  }
-}
+// resource pong 'Radius.Compute/functions@2025-12-08-preview' = {
+//   name: 'pong'
+//   properties: {
+//     application: pongApp.id
+//     environment: environment
+//     image: 'pong:latest'
+//     connections: {
+//       redis: {
+//         source: redis.id
+//       }
+//     }
+//   }
+// }
 
 resource redis 'Applications.Datastores/redisCaches@2023-10-01-preview' = {
   name: 'redis'
