@@ -1,5 +1,6 @@
 extension radius
 extension radiusCompute
+extension radiusData
 
 @description('The ID of your Radius Environment. Set automatically by the rad CLI.')
 param environment string
@@ -29,7 +30,7 @@ resource function 'Radius.Compute/functions@2025-12-08-preview' = {
   }
 }
 
-resource redis 'Applications.Datastores/redisCaches@2023-10-01-preview' = {
+resource redis 'Radius.Data/redisCaches@2025-12-08-preview' = {
   name: '${name}-redis'
   properties: {
     application: functionapp.id

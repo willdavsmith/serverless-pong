@@ -1,6 +1,7 @@
 {
     "extensions": {
         "radius": "br:biceptypes.azurecr.io/radius:latest",
-        "radiusCompute": "radiusCompute.tgz"
+        "radiusCompute": "radiusCompute.tgz",
+        "radiusData": "radiusData.tgz"
     }
 }
