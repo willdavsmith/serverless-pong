@@ -98,6 +98,6 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
 
 output result object = {
   values: {
-    functionURL: 'https://${functionApp.properties.defaultHostName}/${context.resource.properties.functionPath}'
+    function_url: 'https://${functionApp.properties.defaultHostName}/${context.resource.properties.functionPath}'
   } 
 }
