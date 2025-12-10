@@ -21,18 +21,33 @@ async function getRedisClient() {
   }
 
   if (!redisClient) {
-    const redisUrl = process.env.CONNECTION_REDIS_URL || process.env.REDIS_URL || 'redis://localhost:6379';
-    const isSecure = redisUrl.startsWith('rediss://');
-    const safeUrl = redisUrl.replace(/:[^@]*@/, ':****@');
-    console.log(`[REDIS] Connecting to ${safeUrl} (TLS=${isSecure})`);
-
-    redisClient = redis.createClient({
-      url: redisUrl,
+    const host = process.env.CONNECTION_REDIS_HOST || 'localhost';
+    const port = process.env.CONNECTION_REDIS_PORT || '6379';
+    const username = process.env.CONNECTION_REDIS_USERNAME || undefined;
+    const password = process.env.CONNECTION_REDIS_PASSWORD || undefined;
+    // Accept common truthy strings for TLS (Azure portal shows "True")
+    const useTls = String(process.env.CONNECTION_REDIS_TLS || '').toLowerCase() === 'true';
+    
+    const config = {
       socket: {
-        tls: isSecure,
+        host: host,
+        port: parseInt(port, 10),
+        tls: useTls,
         connectTimeout: 1500
       }
-    });
+    };
+    
+    // Add authentication if provided
+    if (username) {
+      config.username = username;
+    }
+    if (password) {
+      config.password = password;
+    }
+
+    console.error(`Connecting to Redis at ${host}:${port} (TLS: ${useTls})`);
+
+    redisClient = redis.createClient(config);
     
     redisClient.on('error', (err) => {
       console.error('Redis Client Error', err);
