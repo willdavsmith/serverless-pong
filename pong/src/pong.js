@@ -5,25 +5,76 @@ const redis = require('redis');
 // Redis client setup
 let redisClient = null;
 let isRedisConnected = false;
+let redisUnavailable = false;
+let redisUnavailableMessage = null;
+
+class RedisUnavailableError extends Error {
+  constructor(message) {
+    super(message || 'Redis connection unavailable');
+    this.name = 'RedisUnavailableError';
+  }
+}
 
 async function getRedisClient() {
+  if (redisUnavailable) {
+    throw new RedisUnavailableError(redisUnavailableMessage);
+  }
+
   if (!redisClient) {
-    const redisUrl = process.env.CONNECTION_REDIS_URL || 'redis://localhost:6379';
-    redisClient = redis.createClient({ url: redisUrl });
+    const redisUrl = process.env.CONNECTION_REDIS_URL || 'rediss://clustercfg.memdb-4a2a2d8c.p4i6wq.memorydb.us-east-2.amazonaws.com:6379';
+    redisClient = redis.createClient({
+      url: redisUrl,
+      socket: {
+        tls: redisUrl.startsWith('rediss://'),
+        connectTimeout: 1500
+      }
+    });
     
     redisClient.on('error', (err) => {
       console.error('Redis Client Error', err);
       isRedisConnected = false;
+      redisUnavailable = true;
+      redisUnavailableMessage = err?.message || 'Unknown Redis error';
     });
     
     redisClient.on('connect', () => {
       console.log('Redis connected');
       isRedisConnected = true;
+      redisUnavailable = false;
+      redisUnavailableMessage = null;
     });
     
-    await redisClient.connect();
+    try {
+      await redisClient.connect();
+    } catch (err) {
+      console.error('Redis connection failed', err);
+      redisUnavailable = true;
+      redisUnavailableMessage = err?.message || 'Unable to connect to Redis';
+      redisClient = null;
+      throw new RedisUnavailableError(redisUnavailableMessage);
+    }
   }
   return redisClient;
+}
+
+function redisUnavailableResponse() {
+  return {
+    statusCode: 503,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ success: false, error: 'Redis connection unavailable', detail: redisUnavailableMessage })
+  };
+}
+
+async function ensureRedisAvailable() {
+  try {
+    const client = await getRedisClient();
+    return { ok: true, client };
+  } catch (err) {
+    if (err instanceof RedisUnavailableError) {
+      return { ok: false, response: redisUnavailableResponse() };
+    }
+    throw err;
+  }
 }
 
 // Session TTL: 5 minutes (300 seconds)
@@ -69,6 +120,11 @@ async function handleRequest(method, url, body) {
   // Handle POST requests - game state management
   if (method === 'POST') {
     try {
+      const redisStatus = await ensureRedisAvailable();
+      if (!redisStatus.ok) {
+        return redisStatus.response;
+      }
+
       const requestBody = typeof body === 'string' ? JSON.parse(body) : body;
       
       switch (action) {
@@ -98,6 +154,9 @@ async function handleRequest(method, url, body) {
           };
       }
     } catch (error) {
+      if (error instanceof RedisUnavailableError || redisUnavailable) {
+        return redisUnavailableResponse();
+      }
       console.error('Error:', error);
       return {
         statusCode: 500,
