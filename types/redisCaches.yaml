@@ -85,4 +85,8 @@ types:
               type: string
               description: The password for connecting to the database.
               readOnly: true
+            tls:
+              type: boolean
+              description: Whether to use TLS when connecting to the database.
+              readOnly: true
           required: [environment]
