@@ -2,11 +2,11 @@
   "name": "serverlesspong",
   "version": "1.0.0",
   "description": "Serverless Pong game running on Azure Functions and AWS Lambda",
-  "main": "src/pong.js",
+  "main": "index.js",
   "scripts": {
     "dev": "node src/local.js",
     "build:local": "docker buildx build --platform linux/amd64,linux/arm64 --load -f Dockerfile.local -t pong-local:latest .",
-    "build:lambda": "DOCKER_BUILDKIT=0 docker build --platform linux/amd64 -f Dockerfile.lambda -t 817312594854.dkr.ecr.us-east-2.amazonaws.com/example-lambda-container:latest . && docker push 817312594854.dkr.ecr.us-east-2.amazonaws.com/example-lambda-container:latest",
+    "build:lambda": "docker build --platform linux/amd64 -f Dockerfile.lambda -t 817312594854.dkr.ecr.us-east-2.amazonaws.com/example-lambda-container:latest . --push",
     "build:azure": "docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile.azure -t ghcr.io/willdavsmith/radius/pong:latest . --push",
     "build:all": "npm run build:local && npm run build:lambda && npm run build:azure"
   },

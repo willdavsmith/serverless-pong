@@ -21,11 +21,15 @@ async function getRedisClient() {
   }
 
   if (!redisClient) {
-    const redisUrl = process.env.CONNECTION_REDIS_URL || 'rediss://clustercfg.memdb-4a2a2d8c.p4i6wq.memorydb.us-east-2.amazonaws.com:6379';
+    const redisUrl = process.env.CONNECTION_REDIS_URL || process.env.REDIS_URL || 'redis://localhost:6379';
+    const isSecure = redisUrl.startsWith('rediss://');
+    const safeUrl = redisUrl.replace(/:[^@]*@/, ':****@');
+    console.log(`[REDIS] Connecting to ${safeUrl} (TLS=${isSecure})`);
+
     redisClient = redis.createClient({
       url: redisUrl,
       socket: {
-        tls: redisUrl.startsWith('rediss://'),
+        tls: isSecure,
         connectTimeout: 1500
       }
     });
