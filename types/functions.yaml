@@ -11,7 +11,7 @@ types:
 
       resource myApp 'Applications.Core/Applications@2023-10-01-preview' = { ... }
 
-      resource fn 'Radius.Compute/functions@2025-08-01-preview' = {
+      resource fn 'Radius.Compute/functions@2025-12-08-preview' = {
         name: 'hello-func'
         properties: {
           application: myApp.id
